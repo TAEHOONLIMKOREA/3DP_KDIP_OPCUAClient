@@ -1,16 +1,29 @@
-# This is a sample Python script.
+from opcua import Client
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+# Initiate
+url = "opc.tcp://localhost:4840/freeopcua/server/"
+client = Client(url)
 
+try:
+    # Connect to Server
+    client.connect()
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+    # Optional if you already knew node's id
+    root = client.get_root_node()
+    print(f'Root node is {root}')
 
+    # Read node
+    var = client.get_node("ns=2;i=2")
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+    # Print Value
+    print(f'Node : {var}')
+    print(f'Value of node :{var.get_value()}') # Get and print only value of thge node
+    print(f'Full value of node : {var.get_data_value()}') # Get and print full value of the node
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    # Write Value
+    var.set_value(1.3) # Set value into 1.3
+    print(f'New value is : {var.get_value()}') # Get and print full value of the node
+
+finally:
+    # Disconnect when finish
+    client.disconnect()
