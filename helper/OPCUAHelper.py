@@ -2,8 +2,6 @@ from opcua import Client
 import time
 
 
-
-
 def ConnectServer():
     url = "opc.tcp://localhost:26543"
     client = Client(url)
