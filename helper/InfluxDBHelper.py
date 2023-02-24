@@ -1,4 +1,3 @@
-
 from influxdb import InfluxDBClient
 from datetime import datetime
 
@@ -10,21 +9,14 @@ _measurement = '20230223_1749'
 
 client = InfluxDBClient(host=_host, port=_port)
 
-def CreateDB(dbname=_dbname, measurement=_measurement):
+
+def CreateDB(dbname=_dbname):
     # check database list
     list_db = client.get_list_database()
     ret = next((item for item in list_db if item['name'] == dbname), None)
     if ret is None:
         client.create_database(dbname)
 
-        # check measurement list
-    list_measurements = client.get_list_measurements()
-    rtn = next((item for item in list_measurements if item['name'] == measurement), None)
-    if rtn is measurement:
-        client.drop_measurement(measurement)
-
-    mesurementName=measurement
-    global mesurementName
 
 
 def InsertPoint(paramName, value, layerIdx, tag):
@@ -32,7 +24,7 @@ def InsertPoint(paramName, value, layerIdx, tag):
     timestamp = datetime.now()
     point = [
         {
-            'measurement': mesurementName,
+            'measurement': _measurement,
             'tags': {
                 'LayerIdx': layerIdx,
                 'tag': tag
@@ -45,4 +37,4 @@ def InsertPoint(paramName, value, layerIdx, tag):
     ]
 
     print("Write point: {0}".format(point))
-    client.write_points(point, database=_dbname)
+    client.write_points(point, database=_dbname)f

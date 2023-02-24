@@ -1,4 +1,5 @@
 from opcua import Client
+from helper import InfluxDBHelper
 import time
 
 
@@ -23,11 +24,21 @@ def ConnectServer():
             Robot1_Axis3 = client.get_node("ns=2;s=Robot1_Axis3")
             Robot1_Axis4 = client.get_node("ns=2;s=Robot1_Axis4")
 
+            value1 = Robot1_Axis1.get_value()
+            value2 = Robot1_Axis2.get_value()
+            value3 = Robot1_Axis3.get_value()
+            value4 = Robot1_Axis4.get_value()
+
             # Print Value
-            print(f'Value of Robot1_Axis1 :{Robot1_Axis1.get_value()}')  # Get and print only value of the node
-            print(f'Value of Robot1_Axis2 :{Robot1_Axis2.get_value()}')  # Get and print only value of the node
-            print(f'Value of Robot1_Axis3 :{Robot1_Axis3.get_value()}')  # Get and print only value of the node
-            print(f'Value of Robot1_Axis4 :{Robot1_Axis4.get_value()}')  # Get and print only value of the node
+            print(f'Value of Robot1_Axis1 :{value1}')  # Get and print only value of the node
+            print(f'Value of Robot1_Axis2 :{value2}')  # Get and print only value of the node
+            print(f'Value of Robot1_Axis3 :{value3}')  # Get and print only value of the node
+            print(f'Value of Robot1_Axis4 :{value4}')  # Get and print only value of the node
+
+            InfluxDBHelper.InsertPoint("Robot1_Axis1", value1, 1, "INERTGAS")
+            InfluxDBHelper.InsertPoint("Robot1_Axis1", value2, 2, "ENVIRONMENT")
+            InfluxDBHelper.InsertPoint("Robot1_Axis1", value3, 3, "POWDERED")
+            InfluxDBHelper.InsertPoint("Robot1_Axis1", value4, 4, "SCANFIELD")
 
             time.sleep(1)
     finally:
