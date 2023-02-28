@@ -5,7 +5,7 @@ _host = 'keties.iptime.org'
 _port = 55592
 _protocol = 'line'
 _dbname = 'TestDB'
-_measurement = '20230223_1749'
+_measurement = '20230227_1744'
 
 client = InfluxDBClient(host=_host, port=_port)
 
@@ -37,4 +37,4 @@ def InsertPoint(paramName, value, layerIdx, tag):
     ]
 
     print("Write point: {0}".format(point))
-    client.write_points(point, database=_dbname)f
+    client.write_points(point, database=_dbname)
