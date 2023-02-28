@@ -1,28 +1,34 @@
 from opcua import Client
 from helper import InfluxDBHelper
+from threading import Event
 import time
 
-
+event = Event()
 url = "opc.tcp://localhost:26543"
 client = Client(url)
 
-def ConnectServer():
+def ConnectOPCUAServer():
     try:
         # Connect to Server
         client.connect()
         print("Client Connected")
-    finally:
+    except:
+        print("Except Occurred!")
+
+
+def DisconnectOPCUAServer():
         # Disconnect when finish
         client.disconnect()
 
 
 
 def StartOPCUAStream():
-
-    while True:
+    # Start OPCUA Data Channel
+    print("Start OPCUA Stream")
+    while event.is_set():
         # Optional if you already knew node's id
         root = client.get_root_node()
-        print(f'Root node is {root}')
+        # print(f'Root node is {root}')
 
         # Read node
         Robot1_Axis1 = client.get_node("ns=2;s=Robot1_Axis1")
@@ -36,10 +42,10 @@ def StartOPCUAStream():
         value4 = Robot1_Axis4.get_value()
 
         # Print Value
-        print(f'Value of Robot1_Axis1 :{value1}')  # Get and print only value of the node
-        print(f'Value of Robot1_Axis2 :{value2}')  # Get and print only value of the node
-        print(f'Value of Robot1_Axis3 :{value3}')  # Get and print only value of the node
-        print(f'Value of Robot1_Axis4 :{value4}')  # Get and print only value of the node
+        # print(f'Value of Robot1_Axis1 :{value1}')  # Get and print only value of the node
+        # print(f'Value of Robot1_Axis2 :{value2}')  # Get and print only value of the node
+        # print(f'Value of Robot1_Axis3 :{value3}')  # Get and print only value of the node
+        # print(f'Value of Robot1_Axis4 :{value4}')  # Get and print only value of the node
 
         InfluxDBHelper.InsertPoint("Robot1_Axis1", value1, 1, "INERTGAS")
         InfluxDBHelper.InsertPoint("Robot1_Axis2", value2, 1, "ENVIRONMENT")
@@ -47,6 +53,8 @@ def StartOPCUAStream():
         InfluxDBHelper.InsertPoint("Robot1_Axis4", value4, 1, "SCANFIELD")
 
         time.sleep(1)
+
+    print("Finished OPCUA Stream")
 
 
 
