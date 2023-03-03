@@ -44,6 +44,7 @@ class UaClient(object):
         node_CurrentLayer = self.client.get_node("ns=2;s=Services.Scan System.Current Layer")
         node_TotalLayer = self.client.get_node("ns=2;s=Services.Scan System.Total Layers")
         node_JobFile = self.client.get_node("ns=2;s=Services.Scan System.JobFile")
+        node_JobID = self.client.get_node("ns=2;s=Services.Scan System.JobID")
 
 
         while event.is_set():
@@ -59,40 +60,89 @@ class UaClient(object):
 
             InfluxDBHelper.InsertPoint("Robot1_Axis1", value_CurrentLayer, 1, "INERTGAS", timestamp)
             InfluxDBHelper.InsertPoint("Robot1_Axis2", value_TotalLayer, 1, "ENVIRONMENT", timestamp)
-            InfluxDBHelper.InsertPoint("Robot1_Axis3", value_JobFile, 1, "POWDERED", timestamp)
-            InfluxDBHelper.InsertPoint("Robot1_Axis4", value_JobID, 1, "SCANFIELD", timestamp)
+            # InfluxDBHelper.InsertPoint("Robot1_Axis3", value_JobFile, 1, "POWDERED", timestamp)
+            # InfluxDBHelper.InsertPoint("Robot1_Axis4", value_JobID, 1, "SCANFIELD", timestamp)
 
             time.sleep(1)
 
         print("Finished OPCUA Stream")
 
-    def StartLogEnvDataStream(self):
 
-        node_JobID = self.client.get_node("ns=2;s=Services.Scan System.JobID")
-        node_JobID = self.client.get_node("ns=2;s=Services.Scan System.JobID")
-        node_JobID = self.client.get_node("ns=2;s=Services.Scan System.JobID")
-        node_JobID = self.client.get_node("ns=2;s=Services.Scan System.JobID")
-        node_JobID = self.client.get_node("ns=2;s=Services.Scan System.JobID")
-        node_JobID = self.client.get_node("ns=2;s=Services.Scan System.JobID")
-        node_JobID = self.client.get_node("ns=2;s=Services.Scan System.JobID")
-        node_JobID = self.client.get_node("ns=2;s=Services.Scan System.JobID")
-        node_JobID = self.client.get_node("ns=2;s=Services.Scan System.JobID")
-        node_JobID = self.client.get_node("ns=2;s=Services.Scan System.JobID")
+
+    # InfluxDB에 넣어야함.
+    def StartEnvDataStream(self):
+
+        # __Environment Parameter__
+        node_OxygenLowChamber = self.client.get_node("ns=2;s=Targets.Target_0.Analog Input.""Oxygen Chamber Low.AI4""")
+        node_PressureChamber = self.client.get_node("ns=2;s=Targets.Target_0.Analog Input.""Pressure Chamber.AI5""")
+        node_PressurePostFilter = self.client.get_node("ns=2;s=Targets.Target_0.Analog Input.""Pressure Post Filter.AI7""")
+        node_PressurePreFilter = self.client.get_node("ns=2;s=Targets.Target_0.Analog Input.""Pressure Pre Filter.AI7""")
+        node_TemperatureBuildplate = self.client.get_node("ns=2;s=Targets.Target_0.Analog Input.""Temperature Buildplate.AI1""")
+        node_TemperatureChamber = self.client.get_node("ns=2;s=Targets.Target_0.Analog Input.""Temperature Chamber.AI0""")
+        node_TemperatureHopper = self.client.get_node("ns=2;s=Targets.Target_0.Analog Input.""Temperature Hopper.AI2""")
+        node_BuildplateHeaterControl = self.client.get_node("ns=2;s=Targets.Target_0.Analog Input.""Buildplate Heater Control.AO2""")
+        node_HopperHeaterControl = self.client.get_node("ns=2;s=Targets.Target_0.Analog Input.""Hopper Heater Control.AO3""")
+
+
+        # __Inert_Gas__
+        node_GasControlThresholdA = self.client.get_node("ns=2;s=User Channels.GasControl.""GasControl.ThresholdA""")
+        node_GasControlThresholdB = self.client.get_node("ns=2;s=User Channels.GasControl.""GasControl.ThresholdB""")
+        node_GasControlHysterisis = self.client.get_node("ns=2;s=User Channels.GasControl.""GasControl.Hysterisis""")
+        node_GasControlVirtualOxygenValue = self.client.get_node("ns=2;s=User Channels.GasControl.""GasControl.VirtualOxygenValue""")
+        node_GasControlEMCYStatus = self.client.get_node("ns=2;s=User Channels.GasControl.""GasControl.EMCYStatus""")
+        node_GasControlCommand = self.client.get_node("ns=2;s=User Channels.GasControl.""GasControl.Command""")
+        node_GasControlFeedback = self.client.get_node("ns=2;s=User Channels.GasControl.""GasControl.Feedback""")
+        node_GasControlManual = self.client.get_node("ns=2;s=User Channels.GasControl.""GasControl.Manual""")
+        node_GasControlStatus = self.client.get_node("ns=2;s=User Channels.GasControl.""GasControl.Status""")
+        node_ValveCirculation = self.client.get_node("ns=2;s=TargetsTarget_0.Digital Output.""Valve Circulation.DO1""")
+        node_ValveFume = self.client.get_node("ns=2;s=TargetsTarget_0.Digital Output.""Valve Fume.DO3""")
+        node_ValveInlet = self.client.get_node("ns=2;s=TargetsTarget_0.Digital Output.""Valve Inlet.DO0""")
+        node_ValveOutlet = self.client.get_node("ns=2;s=TargetsTarget_0.Digital Output.""Valve Outlet.DO4""")
+        node_ValveVentilation = self.client.get_node("ns=2;s=TargetsTarget_0.Digital Output.""Valve Ventilation.DO2""")
+        node_PumpSwitch = self.client.get_node("ns=2;s=TargetsTarget_0.Digital Output.""Pump Switch.D11""")
+
+
+        # __Powder_Bed__
+        node_BuildplateMotionPositionFeedback = self.client.get_node("ns=2;s=Components.Buildplate Motion.Position Feedback")
+        node_BuildplateMotionPositionRequest = self.client.get_node("ns=2;s=Components.Buildplate Motion.Position Request")
+        node_BuildplateMotionSpeedFeedback = self.client.get_node("ns=2;s=Components.Buildplate Motion.Speed Feedback")
+        node_BuildplateMotionSpeedRequest = self.client.get_node("ns=2;s=Components.Buildplate Motion.Speed Request")
+        node_BuildplateMotionStatus = self.client.get_node("ns=2;s=Components.Buildplate Motion.Status")
+        node_MaterialMotionCommand = self.client.get_node("ns=2;s=Components.Material Motion.Command")
+        node_ = self.client.get_node("")
+        node_ = self.client.get_node("")
+        node_ = self.client.get_node("")
+        node_ = self.client.get_node("")
+        node_ = self.client.get_node("")
+        node_ = self.client.get_node("")
+        node_ = self.client.get_node("")
+        node_ = self.client.get_node("")
+        node_ = self.client.get_node("")
+        node_ = self.client.get_node("")
+        node_ = self.client.get_node("")
+        node_ = self.client.get_node("")
+        node_ = self.client.get_node("")
+        node_ = self.client.get_node("")
+        node_ = self.client.get_node("")
+        node_ = self.client.get_node("")
+        node_ = self.client.get_node("")
+        node_ = self.client.get_node("")
+        node_ = self.client.get_node("")
 
         while event.is_set():
             # print(f'Root node is {root}')
 
             timestamp = datetime.now()
 
-            value_CurrentLayer = node_CurrentLayer.get_value()
-            value_TotalLayer = node_TotalLayer.get_value()
-            value_JobFile = node_JobFile.get_value()
-            value_JobID = node_JobID.get_value()
-
-            InfluxDBHelper.InsertPoint("Robot1_Axis1", value_CurrentLayer, 1, "INERTGAS", timestamp)
-            InfluxDBHelper.InsertPoint("Robot1_Axis2", value_TotalLayer, 1, "ENVIRONMENT", timestamp)
-            InfluxDBHelper.InsertPoint("Robot1_Axis3", value_JobFile, 1, "POWDERED", timestamp)
-            InfluxDBHelper.InsertPoint("Robot1_Axis4", value_JobID, 1, "SCANFIELD", timestamp)
+            # value_CurrentLayer = node_CurrentLayer.get_value()
+            # value_TotalLayer = node_TotalLayer.get_value()
+            # value_JobFile = node_JobFile.get_value()
+            # value_JobID = node_JobID.get_value()
+            #
+            # InfluxDBHelper.InsertPoint("Robot1_Axis1", value_CurrentLayer, 1, "INERTGAS", timestamp)
+            # InfluxDBHelper.InsertPoint("Robot1_Axis2", value_TotalLayer, 1, "ENVIRONMENT", timestamp)
+            # InfluxDBHelper.InsertPoint("Robot1_Axis3", value_JobFile, 1, "POWDERED", timestamp)
+            # InfluxDBHelper.InsertPoint("Robot1_Axis4", value_JobID, 1, "SCANFIELD", timestamp)
 
             time.sleep(1)
 
