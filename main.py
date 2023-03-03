@@ -1,21 +1,22 @@
 from helper import OPCUAHelper
 from helper import InfluxDBHelper
 from threading import Thread
+from helper import MongoHelper
 import time
 
 if __name__ == '__main__':
-    InfluxDBHelper.CreateDB()
-    OPCUAHelper.ConnectOPCUAServer()
+    # InfluxDBHelper.CreateDB()
+    # OPCUAHelper.ConnectOPCUAServer()
 
     # damon을 True로 해주면 메인쓰레드가 종료될때 함께 종료됨...
 
-    t = Thread(target=OPCUAHelper.StartOPCUAStream)
-    OPCUAHelper.event.set()
+    t = Thread(target=MongoHelper.DisplayDBList())
+    # OPCUAHelper.event.set()
     t.start()
 
 
     time.sleep(10)
-    OPCUAHelper.event.clear()
+    # OPCUAHelper.event.clear()
 
 
 

@@ -1,11 +1,10 @@
 from influxdb import InfluxDBClient
-from datetime import datetime
 
 _host = 'keties.iptime.org'
 _port = 55592
 _protocol = 'line'
 _dbname = 'TestDB'
-_measurement = '20230228_1718'
+_measurement = '20230302_1661'
 
 client = InfluxDBClient(host=_host, port=_port)
 
@@ -19,9 +18,8 @@ def CreateDB(dbname=_dbname):
 
 
 
-def InsertPoint(paramName, value, layerIdx, tag):
+def InsertPoint(paramName, value, layerIdx, tag, timestamp):
 
-    timestamp = datetime.now()
     point = [
         {
             'measurement': _measurement,
