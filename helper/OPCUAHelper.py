@@ -7,12 +7,17 @@ import time
 event = Event()
 # url = "opc.tcp://localhost:26543"
 # client = Client(url)
+class EventHandler(object):
+    # event handler function
+    def datachange_notification(self, node, val, data):
+        print(str(node) + " Received data: ", val, data)
 
 
 class UaClient(object):
 
     def __init__(self, url):
         self.client = Client(url)
+        self.nodes = []
 
 
     def _reset(self):
@@ -33,12 +38,38 @@ class UaClient(object):
 
 
     def StartTestRobotServer(self):
+        root = self.client.get_root_node()
 
-        # Read node
-        Robot1_Axis2 = self.client.get_node("ns=2;s=Robot1_Axis2")
-        Robot1_Axis3 = self.client.get_node("ns=2;s=Robot1_Axis3")
-        Robot1_Axis4 = self.client.get_node("ns=2;s=Robot1_Axis4")
-        Robot1_Axis1 = self.client.get_node("ns=2;s=Robot1_Axis1")
+        for _child in root.get_children():
+            _child_name = _child.get_browse_name()
+            self.nodes.append(_child)
+            _child_name2 = _child.get_display_name()
+            print(_child_name2)
+
+        sub_children = root.get_properties()
+        sub_children.extend(root.get_variables())
+
+        handler = EventHandler()
+        sub = self.client.create_subscription(1000, handler)
+        handle = sub.subscribe_data_change(self.nodes)
+
+        # # get node data from server
+        # Robot1_Axis1 = self.client.get_node("ns=2;s=Robot1_Axis1")
+        # Robot1_Axis2 = self.client.get_node("ns=2;s=Robot1_Axis2")
+        # Robot1_Axis3 = self.client.get_node("ns=2;s=Robot1_Axis3")
+        # Robot1_Axis4 = self.client.get_node("ns=2;s=Robot1_Axis4")
+        #
+        # # handler object
+        # handler = EventHandler()
+        #
+        # # subscription object
+        # sub = self.client.create_subscription(1000, handler)
+        #
+        # # node
+        # handle = sub.subscribe_data_change(Robot1_Axis1)
+        # handle = sub.subscribe_data_change(Robot1_Axis2)
+        # handle = sub.subscribe_data_change(Robot1_Axis3)
+        # handle = sub.subscribe_data_change(Robot1_Axis4)
 
         # value1 = Robot1_Axis1.get_value()
         # value2 = Robot1_Axis2.get_value()
@@ -97,7 +128,24 @@ class UaClient(object):
     # InfluxDB에 넣어야함.
     def StartEnvDataStream(self):
 
-        # __Environment Parameter__
+        # __Build Process__
+        node_ = self.client.get_node("")
+        node_ = self.client.get_node("")
+        node_ = self.client.get_node("")
+        node_ = self.client.get_node("")
+        node_ = self.client.get_node("")
+        node_ = self.client.get_node("")
+        node_ = self.client.get_node("")
+        node_ = self.client.get_node("")
+        node_ = self.client.get_node("")
+        node_ = self.client.get_node("")
+        node_ = self.client.get_node("")
+
+
+
+
+        # __Environment Parameter__ 10개
+        node_OxygenHighChamber = self.client.get_node("ns=2;s=Targets.Target_0.Analog Input.""Oxygen Chamber High.AI3""")
         node_OxygenLowChamber = self.client.get_node("ns=2;s=Targets.Target_0.Analog Input.""Oxygen Chamber Low.AI4""")
         node_PressureChamber = self.client.get_node("ns=2;s=Targets.Target_0.Analog Input.""Pressure Chamber.AI5""")
         node_PressurePostFilter = self.client.get_node("ns=2;s=Targets.Target_0.Analog Input.""Pressure Post Filter.AI7""")
@@ -109,7 +157,7 @@ class UaClient(object):
         node_HopperHeaterControl = self.client.get_node("ns=2;s=Targets.Target_0.Analog Input.""Hopper Heater Control.AO3""")
 
 
-        # __Inert_Gas__
+        # __Inert_Gas__15개
         node_GasControlThresholdA = self.client.get_node("ns=2;s=User Channels.GasControl.""GasControl.ThresholdA""")
         node_GasControlThresholdB = self.client.get_node("ns=2;s=User Channels.GasControl.""GasControl.ThresholdB""")
         node_GasControlHysterisis = self.client.get_node("ns=2;s=User Channels.GasControl.""GasControl.Hysterisis""")
@@ -127,7 +175,7 @@ class UaClient(object):
         node_PumpSwitch = self.client.get_node("ns=2;s=TargetsTarget_0.Digital Output.""Pump Switch.D11""")
 
 
-        # __Powder_Bed__
+        # __Powder_Bed__34개
         node_BuildplateMotionPositionFeedback = self.client.get_node("ns=2;s=Components.Buildplate Motion.Position Feedback")
         node_BuildplateMotionPositionRequest = self.client.get_node("ns=2;s=Components.Buildplate Motion.Position Request")
         node_BuildplateMotionSpeedFeedback = self.client.get_node("ns=2;s=Components.Buildplate Motion.Speed Feedback")
@@ -162,6 +210,10 @@ class UaClient(object):
         node_LEDDisplay3 = self.client.get_node("ns=2;s=Targets.Target_0.Digital Output.""LED Display 3.DO20""")
         node_LEDDisplay4 = self.client.get_node("ns=2;s=Targets.Target_0.Digital Output.""LED Display 4.DO21""")
         node_LEDDisplay5 = self.client.get_node("ns=2;s=Targets.Target_0.Digital Output.""LED Display 5.DO22""")
+
+
+
+        # __ScanFiled__ 18개
         node_LaserPowerRequest = self.client.get_node("ns=2;s=Components.Analog Laser.Power Request")
         node_LaserPowerFeedback = self.client.get_node("ns=2;s=Components.Analog Laser.Power Feedback")
         node_LaserGateRequest = self.client.get_node("ns=2;s=Components.Analog Laser.Gate Request")
@@ -180,7 +232,7 @@ class UaClient(object):
         node_LaserRemoteStart = self.client.get_node("ns=2;s=Targets.Target_0.Digital Output.""Laser Remote Start.DO7""")
         node_LaserEmission = self.client.get_node("ns=2;s=Targets.Target_0.Digital Output.""Laser Emission.DO8""")
         node_LaserGuideBeam = self.client.get_node("ns=2;s=Targets.Target_0.Digital Output.""Laser Guide Beam.DO9""")
-        node_ = self.client.get_node("")
+
 
         while event.is_set():
             # print(f'Root node is {root}')
