@@ -32,6 +32,31 @@ class UaClient(object):
             self.client.disconnect()
 
 
+    def StartTestRobotServer(self):
+
+        # Read node
+        Robot1_Axis2 = self.client.get_node("ns=2;s=Robot1_Axis2")
+        Robot1_Axis3 = self.client.get_node("ns=2;s=Robot1_Axis3")
+        Robot1_Axis4 = self.client.get_node("ns=2;s=Robot1_Axis4")
+        Robot1_Axis1 = self.client.get_node("ns=2;s=Robot1_Axis1")
+
+        # value1 = Robot1_Axis1.get_value()
+        # value2 = Robot1_Axis2.get_value()
+        # value3 = Robot1_Axis3.get_value()
+        # value4 = Robot1_Axis4.get_value()
+
+        # Print Value
+        # print(f'Value of Robot1_Axis1 :{value1}')  # Get and print only value of the node
+        # print(f'Value of Robot1_Axis2 :{value2}')  # Get and print only value of the node
+        # print(f'Value of Robot1_Axis3 :{value3}')  # Get and print only value of the node
+        # print(f'Value of Robot1_Axis4 :{value4}')  # Get and print only value of the node
+
+        # InfluxDBHelper.InsertPoint("Robot1_Axis1", value1, 1, "INERTGAS")
+        # InfluxDBHelper.InsertPoint("Robot1_Axis2", value2, 1, "ENVIRONMENT")
+        # InfluxDBHelper.InsertPoint("Robot1_Axis3", value3, 1, "POWDERED")
+        # InfluxDBHelper.InsertPoint("Robot1_Axis4", value4, 1, "SCANFIELD")
+
+
 
     def StartBuildInfoDataStream(self):
         # Start OPCUA Data Channel
@@ -109,24 +134,52 @@ class UaClient(object):
         node_BuildplateMotionSpeedRequest = self.client.get_node("ns=2;s=Components.Buildplate Motion.Speed Request")
         node_BuildplateMotionStatus = self.client.get_node("ns=2;s=Components.Buildplate Motion.Status")
         node_MaterialMotionCommand = self.client.get_node("ns=2;s=Components.Material Motion.Command")
-        node_ = self.client.get_node("")
-        node_ = self.client.get_node("")
-        node_ = self.client.get_node("")
-        node_ = self.client.get_node("")
-        node_ = self.client.get_node("")
-        node_ = self.client.get_node("")
-        node_ = self.client.get_node("")
-        node_ = self.client.get_node("")
-        node_ = self.client.get_node("")
-        node_ = self.client.get_node("")
-        node_ = self.client.get_node("")
-        node_ = self.client.get_node("")
-        node_ = self.client.get_node("")
-        node_ = self.client.get_node("")
-        node_ = self.client.get_node("")
-        node_ = self.client.get_node("")
-        node_ = self.client.get_node("")
-        node_ = self.client.get_node("")
+        node_MaterialMotionPositionFeedback = self.client.get_node("ns=2;s=Components.Material Motion.Position Feedback")
+        node_MaterialMotionPositionRequest = self.client.get_node("ns=2;s=Components.Material Motion.Position Request")
+        node_MaterialMotionSpeedFeedback = self.client.get_node("ns=2;s=Components.Material Motion.Speed Feedback")
+        node_MaterialMotionSpeedRequest = self.client.get_node("ns=2;s=Components.Material Motion.Speed Request")
+        node_MaterialMotionStatus = self.client.get_node("ns=2;s=Components.Material Motion.Status")
+        node_RecoaterMotionCommand = self.client.get_node("ns=2;s=Components.Recoater Motion.Command")
+        node_RecoaterMotionPositionFeedback = self.client.get_node("ns=2;s=Components.Recoater Motion.Position Feedback")
+        node_RecoaterMotionPositionRequest = self.client.get_node("ns=2;s=Components.Recoater Motion.Position Request")
+        node_RecoaterMotionSpeedRequest = self.client.get_node("ns=2;s=Components.Recoater Motion.Speed Request")
+        node_RecoaterMotionStatus = self.client.get_node("ns=2;s=Components.Recoater Motion.Status")
+        node_RecoatAmount = self.client.get_node("ns=2;s=User Channels.Recoat.""Recoat.Amount""")
+        node_RecoatCommandMonitored = self.client.get_node("ns=2;s=User Channels.Recoat.""Recoat.Command""")
+        node_RecoatFirstLayerAmount = self.client.get_node("ns=2;s=User Channels.Recoat.""Recoat.FirstLayerAmount""")
+        node_RecoatFirstLayerSpeed = self.client.get_node("ns=2;s=User Channels.Recoat.""Recoat.FirstLayerSpeed""")
+        node_RecoatFirstLayerThickness = self.client.get_node("ns=2;s=User Channels.Recoat.""Recoat.FirstLayerThickness""")
+        node_RecoatLayerStartTime = self.client.get_node("ns=2;s=User Channels.Recoat.""Recoat.LayerStartTime""")
+        node_RecoatLayerThickness = self.client.get_node("ns=2;s=User Channels.Recoat.""Recoat.LayerThickness""")
+        node_RecoatMode = self.client.get_node("ns=2;s=User Channels.Recoat.""Recoat.Mode""")
+        node_RecoatRecoatingSpeed = self.client.get_node("ns=2;s=User Channels.Recoat.""Recoat.RecoatingSpeed""")
+        node_RecoatStatus = self.client.get_node("ns=2;s=User Channels.Recoat.""Recoat.Status""")
+        node_BuildSettingsFeederDosage = self.client.get_node("ns=2;s=User Channels.BuildSettings.""BuildSettings.FeederDosage""")
+        node_HopperPositionPreset = self.client.get_node("ns=2;s=Targets.Target_0.Digital Output.""Hopper Position Preset.DO16""")
+        node_LEDDisplay0 = self.client.get_node("ns=2;s=Targets.Target_0.Digital Output.""LED Display 0.DO17""")
+        node_LEDDisplay1 = self.client.get_node("ns=2;s=Targets.Target_0.Digital Output.""LED Display 1.DO18""")
+        node_LEDDisplay2 = self.client.get_node("ns=2;s=Targets.Target_0.Digital Output.""LED Display 2.DO19""")
+        node_LEDDisplay3 = self.client.get_node("ns=2;s=Targets.Target_0.Digital Output.""LED Display 3.DO20""")
+        node_LEDDisplay4 = self.client.get_node("ns=2;s=Targets.Target_0.Digital Output.""LED Display 4.DO21""")
+        node_LEDDisplay5 = self.client.get_node("ns=2;s=Targets.Target_0.Digital Output.""LED Display 5.DO22""")
+        node_LaserPowerRequest = self.client.get_node("ns=2;s=Components.Analog Laser.Power Request")
+        node_LaserPowerFeedback = self.client.get_node("ns=2;s=Components.Analog Laser.Power Feedback")
+        node_LaserGateRequest = self.client.get_node("ns=2;s=Components.Analog Laser.Gate Request")
+        node_LaserGateFeedback = self.client.get_node("ns=2;s=Components.Analog Laser.Gate Feedback")
+        node_ScanFieldCommand = self.client.get_node("ns=2;s=Components.Scan Field.Command")
+        node_ScanFieldSpotSizeFeedback = self.client.get_node("ns=2;s=Components.Scan Field.Spot Size Feedback")
+        node_ScanFieldStatus = self.client.get_node("ns=2;s=Components.Scan Field.Status")
+        node_ScanFieldXFeedback = self.client.get_node("ns=2;s=Components.Scan Field.X Feedback")
+        node_ScanFieldXRequest = self.client.get_node("ns=2;s=Components.Scan Field.X Request")
+        node_ScanFieldYFeedback = self.client.get_node("ns=2;s=Components.Scan Field.Y Feedback")
+        node_ScanFieldYRequest = self.client.get_node("ns=2;s=Components.Scan Field.Y Request")
+        node_ScanFieldZFeedback = self.client.get_node("ns=2;s=Components.Scan Field.Z Feedback")
+        node_ScanFieldZRequest = self.client.get_node("ns=2;s=Components.Scan Field.Z Request")
+        node_LightSwitch = self.client.get_node("ns=2;s=Targets.Target_0.Digital Output.""Light Switch.DO10""")
+        node_LaserRemoteSwitch = self.client.get_node("ns=2;s=Targets.Target_0.Digital Output.""Laser Remote Switch.DO6""")
+        node_LaserRemoteStart = self.client.get_node("ns=2;s=Targets.Target_0.Digital Output.""Laser Remote Start.DO7""")
+        node_LaserEmission = self.client.get_node("ns=2;s=Targets.Target_0.Digital Output.""Laser Emission.DO8""")
+        node_LaserGuideBeam = self.client.get_node("ns=2;s=Targets.Target_0.Digital Output.""Laser Guide Beam.DO9""")
         node_ = self.client.get_node("")
 
         while event.is_set():
