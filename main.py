@@ -7,35 +7,43 @@ import time
 
 url = "opc.tcp://localhost:26543"
 
-event = Event()
 
 if __name__ == '__main__':
     # InfluxDBHelper.CreateDB()
+    OPCUAHelper.IsBuilding = False
     uaclient = OPCUAHelper.UaClient(url)
     uaclient.ConnectServer()
     uaclient.SetUaNodes()
 
     # Build Info Node 구독
     uaclient.SubscribeBuildInfoNode()
-    uaclient.StartTestRobotServer()
-    # uaclient.DisconnectServer()
-    # damon을 True로 해주면 메인쓰레드가 종료될때 함께 종료됨...
+    uaclient.SubscribeRobotServer()
 
-    time.sleep(5)
-    uaclient.UnSubscribeTestRobotServer()
+    uaclient.StartBuildInfoStream()
+
+
     while True:
-        a = input()
-        if (a == 'exit'):
-            uaclient.UnSubscribeBuildInfoNode()
-            break
-        elif(a == 'Start'):
-            event.set()
+        if not OPCUAHelper.IsBuilding and OPCUAHelper.event.is_set():
+            uaclient.StartRobotServerStream()
+        elif OPCUAHelper.IsBuilding and not OPCUAHelper.event.is_set():
+            uaclient.FinishRobotServerStream()
+
+        # a = input()
+        # if (a == 'exit'):
+        #     uaclient.UnSubscribeBuildInfoNode()
+        #     break
+        # elif(a == 'Start'):
+        #     event.set()
+        time.sleep(1)
 
 
+
+
+    # damon을 True로 해주면 메인쓰레드가 종료될때 함께 종료됨...
     t = Thread(target=MongoHelper.DisplayDBList())
     # OPCUAHelper.event.set()
     t.start()
-
+    uaclient.DisconnectServer()
 
 
     # time.sleep(10)

@@ -1,4 +1,5 @@
 import opcua
+from threading import Event
 from opcua import Client
 from helper import InfluxDBHelper
 from datetime import datetime
@@ -6,14 +7,22 @@ from datetime import datetime
 nodes_build_info = {}
 nodes_ev_log = {}
 nodes_test = {}
-
+event = Event()
+global IsBuilding
 
 class EventHandler(object):
     # event handler function
+
+
     def datachange_notification(self, node, val, data):
+        global IsBuilding
         if str(node) == "ns=2;s=Robot1_Axis1":
-            self.flag = True
             print(str(node) + " Received data: ", val)
+            if int(val) == -43:
+                event.set()
+            elif int(val) == 43:
+                event.clear()
+
 
 class EventHandler2(object):
     def datachange_notification(self, node, val, data):
@@ -47,15 +56,20 @@ class UaClient(object):
 
     def SubscribeBuildInfoNode(self):
         handler = EventHandler()
-        self.sub = self.client.create_subscription(1000, handler)
+        self.sub = self.client.create_subscription(500, handler)
+
+    def StartBuildInfoStream(self):
         handle = self.sub.subscribe_data_change(nodes_test['Robot1_Axis1'])
         self.handles_build_info.append(handle)
 
-    def StartTestRobotServer(self):
+    def SubscribeRobotServer(self):
         root = self.client.get_root_node()
 
         handler = EventHandler2()
-        self.sub2 = self.client.create_subscription(1000, handler)
+        self.sub2 = self.client.create_subscription(500, handler)
+
+    def StartRobotServerStream(self):
+        self.handles.clear()
         # handle1 = self.sub.subscribe_data_change(nodes_test['Robot1_Axis1'])
         handle2 = self.sub2.subscribe_data_change(nodes_test['Robot1_Axis2'])
         handle3 = self.sub2.subscribe_data_change(nodes_test['Robot1_Axis3'])
@@ -65,6 +79,8 @@ class UaClient(object):
         self.handles.append(handle3)
         self.handles.append(handle4)
 
+        global IsBuilding
+        IsBuilding = True
 
 
 
@@ -103,11 +119,14 @@ class UaClient(object):
         # InfluxDBHelper.InsertPoint("Robot1_Axis4", value4, 1, "SCANFIELD")
 
 
-    def UnSubscribeTestRobotServer(self):
+    def FinishRobotServerStream(self):
+        global IsBuilding
         for h in self.handles:
              self.sub2.unsubscribe(h)
 
-    def UnSubscribeBuildInfoNode(self):
+        IsBuilding = False
+
+    def FinishBuildInfoStream(self):
         for h in self.handles_build_info:
             self.sub.unsubscribe(h)
 
