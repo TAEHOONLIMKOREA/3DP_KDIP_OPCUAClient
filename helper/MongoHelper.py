@@ -12,10 +12,14 @@ class MyMongoClient(object):
     def __init__(self,kdip):
         self.KDIP = kdip
 
-
     def ConnectMongoServer(self, url):
         self.client = MongoClient(url)
 
     def DisplayDBList(self):
         print(self.client.list_database_names())
 
+    def CreateDB(self, dbName):
+        self.DB = self.client[dbName]
+
+    def InsertDocument(self, collection_name, dynamic_val):
+        self.DB[collection_name].insert_one(dynamic_val)
