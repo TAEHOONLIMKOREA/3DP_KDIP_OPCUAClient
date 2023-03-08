@@ -16,26 +16,16 @@ if __name__ == '__main__':
     uaclient.SetUaNodes()
 
     # Build Info Node 구독
-    uaclient.SubscribeBuildInfoNode()
-    uaclient.SubscribeRobotServer()
+    uaclient.CreateBuildInfoSubscribe()
+    uaclient.CreateEnvLogSubscribe()
 
     uaclient.StartBuildInfoStream()
 
-
     while True:
-        if not OPCUAHelper.IsBuilding and OPCUAHelper.event.is_set():
-            uaclient.StartRobotServerStream()
-        elif OPCUAHelper.IsBuilding and not OPCUAHelper.event.is_set():
-            uaclient.FinishRobotServerStream()
-
-        # a = input()
-        # if (a == 'exit'):
-        #     uaclient.UnSubscribeBuildInfoNode()
-        #     break
-        # elif(a == 'Start'):
-        #     event.set()
-        time.sleep(1)
-
+        if not OPCUAHelper.IsBuilding and OPCUAHelper.BuildingEvent.is_set():
+            uaclient.StartEnvLogStream()
+        elif OPCUAHelper.IsBuilding and not OPCUAHelper.BuildingEvent.is_set():
+            uaclient.FinishEnvLogStream()
 
 
 
@@ -46,18 +36,22 @@ if __name__ == '__main__':
     uaclient.DisconnectServer()
 
 
-    # time.sleep(10)
-    # OPCUAHelper.event.clear()
+
+    # ---------------------------- Test Robot Server code ----------------------------
+    # uaclient.CreateTestBuildInfoSubscribe()
+    # uaclient.CreateRobotServerSubscribe()
+    # uaclient.StartTestBuildInfoStream()
+    #
+    # while True:
+    #     if not OPCUAHelper.IsBuilding and OPCUAHelper.test_event.is_set():
+    #         uaclient.StartRobotServerStream()
+    #     elif OPCUAHelper.IsBuilding and not OPCUAHelper.test_event.is_set():
+    #         uaclient.FinishRobotServerStream()
+    #
+    #     time.sleep(1)
+    # --------------------------------------------------------------------------------
 
 
 
-
-    # print('Script Start!')
-    # for i in range(1, 6):
-    #     time.sleep(3)
-    #     print('for loop #{}'.format(i))
-    #     if i == 4:
-    #         event.clear()
-    # print('Script End!')
 
 

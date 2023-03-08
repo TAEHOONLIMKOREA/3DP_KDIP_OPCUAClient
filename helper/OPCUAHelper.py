@@ -7,26 +7,39 @@ from datetime import datetime
 nodes_build_info = {}
 nodes_ev_log = {}
 nodes_test = {}
-event = Event()
+# test_event = Event()
+BuildingEvent = Event()
 global IsBuilding
 
-class EventHandler(object):
-    # event handler function
-
-
+class BuildInfoSubEventHandler(object):
     def datachange_notification(self, node, val, data):
-        global IsBuilding
-        if str(node) == "ns=2;s=Robot1_Axis1":
-            print(str(node) + " Received data: ", val)
-            if int(val) == -43:
-                event.set()
-            elif int(val) == 43:
-                event.clear()
+        if str(node) == "ns=2;s=Services.Scan System.Current Layer":
+            if val != 0:
+                BuildingEvent.set()
+            else:
+                BuildingEvent.clear()
 
-
-class EventHandler2(object):
+class EnvLogSubEventHandler(object):
     def datachange_notification(self, node, val, data):
-        print(str(node) + " Received data: ", val)
+        print(str(node) + " : ", val)
+
+
+# -------------------------------- Test Class (For Robot Server) --------------------------------
+# class TestEventHandler(object):
+#     # event handler function
+#     def datachange_notification(self, node, val, data):
+#         if str(node) == "ns=2;s=Robot1_Axis1":
+#             print(str(node) + " Received data: ", val)
+#             if int(val) == -43:
+#                 test_event.set()
+#             elif int(val) == 43:
+#                 test_event.clear()
+#
+# class TestEventHandler2(object):
+#     def datachange_notification(self, node, val, data):
+#         print(str(node) + " Received data: ", val)
+# -----------------------------------------------------------------------------------------------
+
 
 
 class UaClient(object):
@@ -37,8 +50,9 @@ class UaClient(object):
         self.current_layer = 0
         self.total_layer = 0
         self.handles_build_info = []
-        self.handles_ev_log = []
-        self.handles = []
+        self.handles_env_log = []
+        # self.handles_test1 = []
+        # self.handles_test2 = []
 
     def ConnectServer(self):
         try:
@@ -53,93 +67,78 @@ class UaClient(object):
             # Disconnect when finish
             self.client.disconnect()
 
+    # -------------------------------- Test Func (Robot Server) --------------------------------
 
-    def SubscribeBuildInfoNode(self):
-        handler = EventHandler()
-        self.sub = self.client.create_subscription(500, handler)
+    # def CreateTestBuildInfoSubscribe(self):
+    #     handler = TestEventHandler()
+    #     self.sub = self.client.create_subscription(500, handler)
+    #
+    # def CreateRobotServerSubscribe(self):
+    #     handler = TestEventHandler2()
+    #     self.sub2 = self.client.create_subscription(500, handler)
+    #
+    # def StartTestBuildInfoStream(self):
+    #     handle = self.sub.subscribe_data_change(nodes_test['Robot1_Axis1'])
+    #     self.handles_test1.append(handle)
+    #
+    # def StartRobotServerStream(self):
+    #     self.handles_test2.clear()
+    #
+    #     for node in nodes_test.values():
+    #         self.handles_test2.append(self.sub2.subscribe_data_change(node))
+    #     global IsBuilding
+    #     IsBuilding = True
+    #
+    #     # InfluxDBHelper.InsertPoint("Robot1_Axis1", value1, 1, "INERTGAS")
+    #     # InfluxDBHelper.InsertPoint("Robot1_Axis2", value2, 1, "ENVIRONMENT")
+    #     # InfluxDBHelper.InsertPoint("Robot1_Axis3", value3, 1, "POWDERED")
+    #     # InfluxDBHelper.InsertPoint("Robot1_Axis4", value4, 1, "SCANFIELD")
+    #
+    # def FinishTestBuildInfoStream(self):
+    #     for h in self.handles_test1:
+    #         self.sub.unsubscribe(h)
+    #
+    # def FinishRobotServerStream(self):
+    #     global IsBuilding
+    #     for h in self.handles_test2:
+    #         self.sub2.unsubscribe(h)
+    #     IsBuilding = False
+
+    # -----------------------------------------------------------------------------
+    def CreateEnvLogSubscribe(self):
+        handler = EnvLogSubEventHandler()
+        self.EnvLogSub = self.client.create_subscription(1000, handler)
+
+    def CreateBuildInfoSubscribe(self):
+        handler = BuildInfoSubEventHandler()
+        self.BuildInfoSub = self.client.create_subscription(1000, handler)
+
+    def StartEnvLogStream(self):
+        print("Start OPC-UA EnvLog Data Stream")
+        for node in nodes_ev_log.values():
+            self.handles_env_log.append(self.EnvLogSub.subscribe_data_change(node))
 
     def StartBuildInfoStream(self):
-        handle = self.sub.subscribe_data_change(nodes_test['Robot1_Axis1'])
-        self.handles_build_info.append(handle)
+        print("Start OPC-UA BuildInfo Data Stream")
+        for node in nodes_build_info.values():
+            self.handles_build_info.append(self.EnvLogSub.subscribe_data_change(node))
 
-    def SubscribeRobotServer(self):
-        root = self.client.get_root_node()
-
-        handler = EventHandler2()
-        self.sub2 = self.client.create_subscription(500, handler)
-
-    def StartRobotServerStream(self):
-        self.handles.clear()
-        # handle1 = self.sub.subscribe_data_change(nodes_test['Robot1_Axis1'])
-        handle2 = self.sub2.subscribe_data_change(nodes_test['Robot1_Axis2'])
-        handle3 = self.sub2.subscribe_data_change(nodes_test['Robot1_Axis3'])
-        handle4 = self.sub2.subscribe_data_change(nodes_test['Robot1_Axis4'])
-
-        self.handles.append(handle2)
-        self.handles.append(handle3)
-        self.handles.append(handle4)
-
+    def FinishEnvLogStream(self):
         global IsBuilding
-        IsBuilding = True
-
-
-
-        # self.sub.unsubscribe(handle1)
-
-
-
-
-
-        # # handler object
-        # handler = EventHandler()
-        #
-        # # subscription object
-        # sub = self.client.create_subscription(1000, handler)
-        #
-        # # node
-        # handle = sub.subscribe_data_change(Robot1_Axis1)
-        # handle = sub.subscribe_data_change(Robot1_Axis2)
-        # handle = sub.subscribe_data_change(Robot1_Axis3)
-        # handle = sub.subscribe_data_change(Robot1_Axis4)
-
-        # value1 = Robot1_Axis1.get_value()
-        # value2 = Robot1_Axis2.get_value()
-        # value3 = Robot1_Axis3.get_value()
-        # value4 = Robot1_Axis4.get_value()
-
-        # Print Value
-        # print(f'Value of Robot1_Axis1 :{value1}')  # Get and print only value of the node
-        # print(f'Value of Robot1_Axis2 :{value2}')  # Get and print only value of the node
-        # print(f'Value of Robot1_Axis3 :{value3}')  # Get and print only value of the node
-        # print(f'Value of Robot1_Axis4 :{value4}')  # Get and print only value of the node
-
-        # InfluxDBHelper.InsertPoint("Robot1_Axis1", value1, 1, "INERTGAS")
-        # InfluxDBHelper.InsertPoint("Robot1_Axis2", value2, 1, "ENVIRONMENT")
-        # InfluxDBHelper.InsertPoint("Robot1_Axis3", value3, 1, "POWDERED")
-        # InfluxDBHelper.InsertPoint("Robot1_Axis4", value4, 1, "SCANFIELD")
-
-
-    def FinishRobotServerStream(self):
-        global IsBuilding
-        for h in self.handles:
-             self.sub2.unsubscribe(h)
-
+        for h in self.handles_env_log:
+            self.EnvLogSub.unsubscribe(h)
+        # handle array 초기화 ★중요★
+        self.handles_env_log.clear()
         IsBuilding = False
 
     def FinishBuildInfoStream(self):
         for h in self.handles_build_info:
-            self.sub.unsubscribe(h)
-
-    def StartEVLogDataStream(self):
-        # Start OPCUA Data Channel
-        print("Start OPCUA EVLog Stream")
+            self.BuildInfoSub.unsubscribe(h)
+            # handle array 초기화 ★중요★
+        self.handles_build_info.clear()
 
 
-
-
-    # InfluxDB에 넣어야함.
     def SetUaNodes(self):
-
         # _COMMON__ 3개
         nodes_build_info['ServerStatus'] = self.client.get_node("i=2256")
         nodes_build_info['CurrentLayer'] = self.client.get_node("ns=2;s=Services.Scan System.Current Layer")
@@ -192,7 +191,6 @@ class UaClient(object):
         nodes_ev_log['ValveOutlet'] = self.client.get_node("ns=2;s=TargetsTarget_0.Digital Output.""Valve Outlet.DO4""")
         nodes_ev_log['ValveVentilation'] = self.client.get_node("ns=2;s=TargetsTarget_0.Digital Output.""Valve Ventilation.DO2""")
         nodes_ev_log['PumpSwitch'] = self.client.get_node("ns=2;s=TargetsTarget_0.Digital Output.""Pump Switch.D11""")
-
 
         # __Powder_Bed__34개
         nodes_ev_log['BuildplateMotionPositionFeedback'] = self.client.get_node("ns=2;s=Components.Buildplate Motion.Position Feedback")
