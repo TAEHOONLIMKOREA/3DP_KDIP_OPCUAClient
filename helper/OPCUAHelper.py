@@ -1,78 +1,73 @@
 import opcua
 from threading import Event
-from opcua import Client
-from helper import InfluxDBHelper
-from helper import MongoHelper
 from datetime import datetime
-
 
 nodes_build_info = {}
 nodes_ev_log = {}
 nodes_test = {}
-# test_event = Event()
-BuildingEvent = Event()
 
-
-class BuildInfoSubEventHandler(object):
-
-    def __init__(self, uaclient):
-        self.uaclient = uaclient
-
-    def datachange_notification(self, node, val, data):
-        if str(node) == "ns=2;s=Services.Scan System.Total Layers":
-            self.uaclient.total_layer = val
-            if val != 0 :
-                BuildingEvent.set()
-                self.uaclient.IsBuilding = True
-            #     Inert InfluxDB
-
-            else:
-                BuildingEvent.clear()
-
-        elif str(node) == "ns=2;s=Services.Scan System.Current Layer":
-            self.uaclient.current_layer = val
-            if val == 0 and self.uaclient.total_layer == 0:
-                self.uaclient.IsBuilding = False
-
-
+# class BuildInfoSubEventHandler(object):
 #
-
-class EnvLogSubEventHandler(object):
-    def datachange_notification(self, node, val, data):
-        print(str(node) + " : ", val)
+#     def __init__(self, uaclient):
+#         self.uaclient = uaclient
+#
+#     def datachange_notification(self, node, val, data):
+#         if str(node) == "ns=2;s=Services.Scan System.Total Layers":
+#             self.uaclient.total_layer = val
+#             if val != 0 :
+#                 BuildingEvent.set()
+#                 self.uaclient.IsBuilding = True
+#             #     Inert InfluxDB
+#
+#             else:
+#                 BuildingEvent.clear()
+#
+#         elif str(node) == "ns=2;s=Services.Scan System.Current Layer":
+#             self.uaclient.current_layer = val
+#             if val == 0 and self.uaclient.total_layer == 0:
+#                 self.uaclient.IsBuilding = False
+#
+#
+# #
+#
+# class EnvLogSubEventHandler(object):
+#     def datachange_notification(self, node, val, data):
+#         print(str(node) + " : ", val)
 
 
 # -------------------------------- Test Class (For Robot Server) --------------------------------
-# class TestEventHandler(object):
-#     # event handler function
-#     def datachange_notification(self, node, val, data):
-#         if str(node) == "ns=2;s=Robot1_Axis1":
-#             print(str(node) + " Received data: ", val)
-#             if int(val) == -43:
-#                 test_event.set()
-#             elif int(val) == 43:
-#                 test_event.clear()
-#
-# class TestEventHandler2(object):
-#     def datachange_notification(self, node, val, data):
-#         print(str(node) + " Received data: ", val)
+class TestEventHandler(object):
+    def __init__(self, kdip):
+        self.KDIP = kdip
+    # event handler function
+    def datachange_notification(self, node, val, data):
+        if str(node) == "ns=2;s=Robot1_Axis1":
+            print(str(node) + " Received data: ", val)
+            if int(val) == -43:
+                self.KDIP.UaClient.TestEvent.set()
+            elif int(val) == 43:
+                self.KDIP.UaClient.TestEvent.clear()
+
+class TestEventHandler2(object):
+    def datachange_notification(self, node, val, data):
+        print(str(node) + " Received data: ", val)
 # -----------------------------------------------------------------------------------------------
 
 class UaClient(object):
 
-    def __init__(self, url):
-        self.url = url
+    def __init__(self, kdip):
         self.IsBuilding = False
-        self.client = opcua.Client(url)
-        self.current_layer = 0
-        self.total_layer = 0
-        self.handles_build_info = []
-        self.handles_env_log = []
-        # self.handles_test1 = []
-        # self.handles_test2 = []
+        self.KDIP = kdip
+        self.Handles_BuildInfo = []
+        self.Handles_EnvLog = []
+        self.handles_test1 = []
+        self.handles_test2 = []
+        self.TestEvent = Event()
 
-    def ConnectServer(self):
+    def ConnectServer(self, url):
         try:
+            self.url = url
+            self.client = opcua.Client(url)
             # Connect to Server
             self.client.connect()
             print("Client Connected")
@@ -86,73 +81,71 @@ class UaClient(object):
 
     # -------------------------------- Test Func (Robot Server) --------------------------------
 
-    # def CreateTestBuildInfoSubscribe(self):
-    #     handler = TestEventHandler()
-    #     self.sub = self.client.create_subscription(500, handler)
-    #
-    # def CreateRobotServerSubscribe(self):
-    #     handler = TestEventHandler2()
-    #     self.sub2 = self.client.create_subscription(500, handler)
-    #
-    # def StartTestBuildInfoStream(self):
-    #     handle = self.sub.subscribe_data_change(nodes_test['Robot1_Axis1'])
-    #     self.handles_test1.append(handle)
-    #
-    # def StartRobotServerStream(self):
-    #     self.handles_test2.clear()
-    #
-    #     for node in nodes_test.values():
-    #         self.handles_test2.append(self.sub2.subscribe_data_change(node))
-    #     global IsBuilding
-    #     IsBuilding = True
-    #
-    #     # InfluxDBHelper.InsertPoint("Robot1_Axis1", value1, 1, "INERTGAS")
-    #     # InfluxDBHelper.InsertPoint("Robot1_Axis2", value2, 1, "ENVIRONMENT")
-    #     # InfluxDBHelper.InsertPoint("Robot1_Axis3", value3, 1, "POWDERED")
-    #     # InfluxDBHelper.InsertPoint("Robot1_Axis4", value4, 1, "SCANFIELD")
-    #
-    # def FinishTestBuildInfoStream(self):
-    #     for h in self.handles_test1:
-    #         self.sub.unsubscribe(h)
-    #
-    # def FinishRobotServerStream(self):
-    #     global IsBuilding
-    #     for h in self.handles_test2:
-    #         self.sub2.unsubscribe(h)
-    #     IsBuilding = False
+    def CreateTestBuildInfoSubscribe(self):
+        handler = TestEventHandler(self)
+        self.TestSub = self.client.create_subscription(500, handler)
 
-    # -----------------------------------------------------------------------------
-    def CreateEnvLogSubscribe(self):
-        handler = EnvLogSubEventHandler()
-        self.EnvLogSub = self.client.create_subscription(1000, handler)
+    def CreateRobotServerSubscribe(self):
+        handler = TestEventHandler2()
+        self.TestSub2 = self.client.create_subscription(500, handler)
 
-    def CreateBuildInfoSubscribe(self):
-        handler = BuildInfoSubEventHandler()
-        self.BuildInfoSub = self.client.create_subscription(1000, handler)
+    def StartTestBuildInfoStream(self):
+        handle = self.TestSub.subscribe_data_change(nodes_test['Robot1_Axis1'])
+        self.handles_test1.append(handle)
 
-    def StartEnvLogStream(self):
-        print("Start OPC-UA EnvLog Data Stream")
-        for node in nodes_ev_log.values():
-            self.handles_env_log.append(self.EnvLogSub.subscribe_data_change(node))
+    def StartRobotServerStream(self):
+        for node in nodes_test.values():
+            self.handles_test2.append(self.TestSub2.subscribe_data_change(node))
         self.IsBuilding = True
 
-    def StartBuildInfoStream(self):
-        print("Start OPC-UA BuildInfo Data Stream")
-        for node in nodes_build_info.values():
-            self.handles_build_info.append(self.EnvLogSub.subscribe_data_change(node))
+        # InfluxDBHelper.InsertPoint("Robot1_Axis1", value1, 1, "INERTGAS")
+        # InfluxDBHelper.InsertPoint("Robot1_Axis2", value2, 1, "ENVIRONMENT")
+        # InfluxDBHelper.InsertPoint("Robot1_Axis3", value3, 1, "POWDERED")
+        # InfluxDBHelper.InsertPoint("Robot1_Axis4", value4, 1, "SCANFIELD")
 
-    def FinishEnvLogStream(self):
-        for h in self.handles_env_log:
-            self.EnvLogSub.unsubscribe(h)
-        # handle array 초기화 ★중요★
-        self.handles_env_log.clear()
+    def FinishTestBuildInfoStream(self):
+        for h in self.handles_test1:
+            self.TestSub.unsubscribe(h)
+        self.handles_test1.clear()
+
+    def FinishRobotServerStream(self):
+        for h in self.handles_test2:
+            self.TestSub2.unsubscribe(h)
+        self.handles_test2.clear()
         self.IsBuilding = False
 
-    def FinishBuildInfoStream(self):
-        for h in self.handles_build_info:
-            self.BuildInfoSub.unsubscribe(h)
-            # handle array 초기화 ★중요★
-        self.handles_build_info.clear()
+    # -----------------------------------------------------------------------------
+    # def CreateEnvLogSubscribe(self):
+    #     handler = EnvLogSubEventHandler()
+    #     self.EnvLogSub = self.client.create_subscription(1000, handler)
+    #
+    # def CreateBuildInfoSubscribe(self):
+    #     handler = BuildInfoSubEventHandler()
+    #     self.BuildInfoSub = self.client.create_subscription(1000, handler)
+    #
+    # def StartEnvLogStream(self):
+    #     print("Start OPC-UA EnvLog Data Stream")
+    #     for node in nodes_ev_log.values():
+    #         self.Handles_EnvLog.append(self.EnvLogSub.subscribe_data_change(node))
+    #     self.IsBuilding = True
+    #
+    # def StartBuildInfoStream(self):
+    #     print("Start OPC-UA BuildInfo Data Stream")
+    #     for node in nodes_build_info.values():
+    #         self.Handles_BuildInfo.append(self.EnvLogSub.subscribe_data_change(node))
+    #
+    # def FinishEnvLogStream(self):
+    #     for h in self.Handles_EnvLog:
+    #         self.EnvLogSub.unsubscribe(h)
+    #     # handle array 초기화 ★중요★
+    #     self.Handles_EnvLog.clear()
+    #     self.IsBuilding = False
+    #
+    # def FinishBuildInfoStream(self):
+    #     for h in self.Handles_BuildInfo:
+    #         self.BuildInfoSub.unsubscribe(h)
+    #         # handle array 초기화 ★중요★
+    #     self.Handles_BuildInfo.clear()
 
 
     def SetUaNodes(self):

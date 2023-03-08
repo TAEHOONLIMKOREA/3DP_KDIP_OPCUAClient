@@ -1,38 +1,48 @@
 from influxdb import InfluxDBClient
 
-_host = 'keties.iptime.org'
-_port = 55592
-_protocol = 'line'
-_dbname = 'TestDB'
-_measurement = '20230302_1661'
-
-client = InfluxDBClient(host=_host, port=_port)
 
 
-def CreateDB(dbname=_dbname):
-    # check database list
-    list_db = client.get_list_database()
-    ret = next((item for item in list_db if item['name'] == dbname), None)
-    if ret is None:
-        client.create_database(dbname)
+class InfluxClient(object):
+    def __init__(self, _kdip):
+        self.KDIP = _kdip
+
+    def ConnectServer(self, _host, _port):
+        self.client = InfluxDBClient(host=_host, port=_port)
+
+    def CreateDB(self, dbname):
+        self.DBName = dbname
+        # check database list
+        try:
+            list_db = self.client.get_list_database()
+            ret = next((item for item in list_db if item['name'] == dbname), None)
+            if ret is None:
+                self.client.create_database(dbname)
+        except:
+            try:
+                self.client.create_database(dbname)
+            except Exception as e:
+                print("exception message : " + str(e))
 
 
 
-def InsertPoint(paramName, value, layerIdx, tag, timestamp):
+    def CreateMeasurement(self, _measurement):
+        self.Measurement = _measurement
 
-    point = [
-        {
-            'measurement': _measurement,
-            'tags': {
-                'LayerIdx': layerIdx,
-                'tag': tag
-            },
-            'fields': {
-                paramName: value,
-            },
-            'time': timestamp
-        }
-    ]
+    def InsertPoint(self, paramName, value, layerIdx, tag, timestamp):
 
-    print("Write point: {0}".format(point))
-    client.write_points(point, database=_dbname)
+        point = [
+            {
+                'measurement': self.Measurement,
+                'tags': {
+                    'LayerIdx': layerIdx,
+                    'tag': tag
+                },
+                'fields': {
+                    paramName: value,
+                },
+                'time': timestamp
+            }
+        ]
+
+        print("Write point: {0}".format(point))
+        self.client.write_points(point, database=self.DBName)

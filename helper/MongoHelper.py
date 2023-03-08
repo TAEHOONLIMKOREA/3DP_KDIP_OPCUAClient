@@ -6,10 +6,16 @@ from pymongo import MongoClient
 # client = MongoClient(mongodb_URI)
 
 # 방법2 - HOST, PORT
-client = MongoClient(host='localhost', port=27017)
+# client = MongoClient(host='localhost', port=27017)
 
-def DisplayDBList():
-    print(client.list_database_names())
+class MyMongoClient(object):
+    def __init__(self,kdip):
+        self.KDIP = kdip
 
 
-def Insert
+    def ConnectMongoServer(self, url):
+        self.client = MongoClient(url)
+
+    def DisplayDBList(self):
+        print(self.client.list_database_names())
+
