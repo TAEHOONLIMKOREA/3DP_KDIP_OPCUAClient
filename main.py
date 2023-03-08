@@ -8,8 +8,6 @@ import time
 _host = 'keties.iptime.org'
 _port = 55592
 _protocol = 'line'
-_dbname = 'TestDB'
-_measurement = '20230302_1661'
 
 #  ---------- OPC-UA Connection Resource --------------
 opc_url = "opc.tcp://localhost:26543"
@@ -29,6 +27,9 @@ class KDIP(object):
 
 if __name__ == '__main__':
     kdip = KDIP()
+    kdip.InfluxClient.ConnectInfluxServer(_host, _port)
+    kdip.InfluxClient.CreateDB("HBNU_PBF_M160")
+
     kdip.UaClient.ConnectServer(opc_url)
     kdip.UaClient.SetUaNodes()
 

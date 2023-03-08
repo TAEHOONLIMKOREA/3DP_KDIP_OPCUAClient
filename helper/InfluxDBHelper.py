@@ -6,7 +6,7 @@ class InfluxClient(object):
     def __init__(self, _kdip):
         self.KDIP = _kdip
 
-    def ConnectServer(self, _host, _port):
+    def ConnectInfluxServer(self, _host, _port):
         self.client = InfluxDBClient(host=_host, port=_port)
 
     def CreateDB(self, dbname):

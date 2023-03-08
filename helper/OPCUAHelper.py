@@ -45,12 +45,23 @@ class TestEventHandler(object):
             print(str(node) + " Received data: ", val)
             if int(val) == -43:
                 self.KDIP.UaClient.TestEvent.set()
+                self.KDIP.InfluxClient.CreateMeasurement(datetime.now().strftime("%Y_%m_%d_%H%M%S"))
+
             elif int(val) == 43:
                 self.KDIP.UaClient.TestEvent.clear()
 
 class TestEventHandler2(object):
+    def __init__(self, kdip):
+        self.KDIP = kdip
+
     def datachange_notification(self, node, val, data):
         print(str(node) + " Received data: ", val)
+        paramName = None
+        for _name, _node in nodes_test.items():
+            if _node == node:
+                paramName = _name
+                break
+        self.KDIP.InfluxClient.InsertPoint(paramName, val, self.KDIP.CurrentLayer, "RobotServerTest", datetime.now())
 # -----------------------------------------------------------------------------------------------
 
 class UaClient(object):
@@ -82,11 +93,11 @@ class UaClient(object):
     # -------------------------------- Test Func (Robot Server) --------------------------------
 
     def CreateTestBuildInfoSubscribe(self):
-        handler = TestEventHandler(self)
+        handler = TestEventHandler(self.KDIP)
         self.TestSub = self.client.create_subscription(500, handler)
 
     def CreateRobotServerSubscribe(self):
-        handler = TestEventHandler2()
+        handler = TestEventHandler2(self.KDIP)
         self.TestSub2 = self.client.create_subscription(500, handler)
 
     def StartTestBuildInfoStream(self):
