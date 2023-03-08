@@ -17,25 +17,41 @@ class BuildInfoSubEventHandler(object):
         self.KDIP = kdip
 
     def datachange_notification(self, node, val, data):
+        datetime_now = datetime.now()
+        datetime_str = datetime_now.strftime("%Y%m%d_%H%M%S")
         if str(node) == "ns=2;s=Services.Scan System.Total Layers":
             self.KDIP.TotalLayer = val
-            datetime_now = datetime.now()
-            datetime_str = datetime_now.strftime("%Y%m%d_%H%M%S")
-            if val != 0 :
-                self.KDIP.BuildingEvent.set()
+            if val != 0:
+                # 빌드 시작 신호
+                if not self.KDIP.IsBuilding:
+                    # 출력 중이지 않다면 시작 이벤트 발생
+                    self.KDIP.BuildingEvent.set()
                 self.KDIP.InfluxClient.CreateMeasurement(datetime_str)
                 self.KDIP.MongoClient.CreateDB(datetime_str)
                 doc = {"time": datetime_now, "TotalLayer": val}
                 self.KDIP.MongoClient.InsertDocument("JobInfo", doc)
-
             else:
+                # 빌드 종료 신호
                 self.KDIP.BuildingEvent.clear()
 
         elif str(node) == "ns=2;s=Services.Scan System.Current Layer":
             self.KDIP.CurrentLayer = val
             if val == 0 and self.KDIP.TotalLayer == 0:
-                self.KDIP.IsBuilding = False
-                #
+                self.KDIP.BuildingEvent.clear()
+                return
+            else:
+                doc = {"time": datetime_now, "CurrentLayer": val}
+                self.KDIP.MongoClient.InsertDocument("JobInfo", doc)
+                # 이제 여기다가 사진 가져오는 코드 작성해야함
+
+
+
+
+
+
+
+
+
 
 class EnvLogSubEventHandler(object):
     def __init__(self, kdip):
