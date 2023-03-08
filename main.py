@@ -22,18 +22,12 @@ if __name__ == '__main__':
     uaclient.StartBuildInfoStream()
 
     while True:
-        if not OPCUAHelper.IsBuilding and OPCUAHelper.BuildingEvent.is_set():
+        if not uaclient.IsBuilding and OPCUAHelper.BuildingEvent.is_set():
             uaclient.StartEnvLogStream()
-        elif OPCUAHelper.IsBuilding and not OPCUAHelper.BuildingEvent.is_set():
+        elif uaclient.IsBuilding and not OPCUAHelper.BuildingEvent.is_set():
             uaclient.FinishEnvLogStream()
+        time.sleep(1)
 
-
-
-    # damon을 True로 해주면 메인쓰레드가 종료될때 함께 종료됨...
-    t = Thread(target=MongoHelper.DisplayDBList())
-    # OPCUAHelper.event.set()
-    t.start()
-    uaclient.DisconnectServer()
 
 
 
@@ -53,5 +47,10 @@ if __name__ == '__main__':
 
 
 
+    # damon을 True로 해주면 메인쓰레드가 종료될때 함께 종료됨...
+    t = Thread(target=MongoHelper.DisplayDBList())
+    # OPCUAHelper.event.set()
+    t.start()
+    uaclient.DisconnectServer()
 
 

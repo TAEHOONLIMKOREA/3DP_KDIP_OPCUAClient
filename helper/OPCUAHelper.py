@@ -2,22 +2,40 @@ import opcua
 from threading import Event
 from opcua import Client
 from helper import InfluxDBHelper
+from helper import MongoHelper
 from datetime import datetime
+
 
 nodes_build_info = {}
 nodes_ev_log = {}
 nodes_test = {}
 # test_event = Event()
 BuildingEvent = Event()
-global IsBuilding
+
 
 class BuildInfoSubEventHandler(object):
+
+    def __init__(self, uaclient):
+        self.uaclient = uaclient
+
     def datachange_notification(self, node, val, data):
-        if str(node) == "ns=2;s=Services.Scan System.Current Layer":
-            if val != 0:
+        if str(node) == "ns=2;s=Services.Scan System.Total Layers":
+            self.uaclient.total_layer = val
+            if val != 0 :
                 BuildingEvent.set()
+                self.uaclient.IsBuilding = True
+            #     Inert InfluxDB
+
             else:
                 BuildingEvent.clear()
+
+        elif str(node) == "ns=2;s=Services.Scan System.Current Layer":
+            self.uaclient.current_layer = val
+            if val == 0 and self.uaclient.total_layer == 0:
+                self.uaclient.IsBuilding = False
+
+
+#
 
 class EnvLogSubEventHandler(object):
     def datachange_notification(self, node, val, data):
@@ -40,12 +58,11 @@ class EnvLogSubEventHandler(object):
 #         print(str(node) + " Received data: ", val)
 # -----------------------------------------------------------------------------------------------
 
-
-
 class UaClient(object):
 
     def __init__(self, url):
         self.url = url
+        self.IsBuilding = False
         self.client = opcua.Client(url)
         self.current_layer = 0
         self.total_layer = 0
@@ -117,6 +134,7 @@ class UaClient(object):
         print("Start OPC-UA EnvLog Data Stream")
         for node in nodes_ev_log.values():
             self.handles_env_log.append(self.EnvLogSub.subscribe_data_change(node))
+        self.IsBuilding = True
 
     def StartBuildInfoStream(self):
         print("Start OPC-UA BuildInfo Data Stream")
@@ -124,12 +142,11 @@ class UaClient(object):
             self.handles_build_info.append(self.EnvLogSub.subscribe_data_change(node))
 
     def FinishEnvLogStream(self):
-        global IsBuilding
         for h in self.handles_env_log:
             self.EnvLogSub.unsubscribe(h)
         # handle array 초기화 ★중요★
         self.handles_env_log.clear()
-        IsBuilding = False
+        self.IsBuilding = False
 
     def FinishBuildInfoStream(self):
         for h in self.handles_build_info:
