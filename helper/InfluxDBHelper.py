@@ -7,16 +7,35 @@ class InfluxClient(object):
         self.KDIP = _kdip
 
     def ConnectInfluxServer(self, _host, _port):
-        self.client = InfluxDBClient(host=_host, port=_port)
+        self.client = InfluxDBClient(host=_host, port=_port, timeout=500)
+        self.health = False
+        try:
+            self.client.ping()
+            self.health = True
+            return True
+        except:
+            return False
+
+    def CheckConnection(self):
+        self.health = False
+        try:
+            self.client.ping()
+            self.health = True
+            return True
+        except:
+            return False
 
     def CreateDB(self, dbname):
         self.DBName = dbname
         # check database list
         try:
+            if self.client is None:
+                return False
             list_db = self.client.get_list_database()
             ret = next((item for item in list_db if item['name'] == dbname), None)
             if ret is None:
                 self.client.create_database(dbname)
+            return True
         except:
             try:
                 self.client.create_database(dbname)

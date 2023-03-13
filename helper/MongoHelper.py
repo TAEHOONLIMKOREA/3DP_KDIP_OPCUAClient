@@ -8,12 +8,20 @@ from pymongo import MongoClient
 # 방법2 - HOST, PORT
 # client = MongoClient(host='localhost', port=27017)
 
+
+
+
 class MyMongoClient(object):
     def __init__(self,kdip):
         self.KDIP = kdip
 
     def ConnectMongoServer(self, url):
-        self.client = MongoClient(url)
+        self.client = MongoClient(url, connectTimeoutMS=500, socketTimeoutMS=500)
+        try:
+            # self.client.server_info()
+            self.client.admin.command('ping')
+        except:
+            print("Server not available")
 
     def DisplayDBList(self):
         print(self.client.list_database_names())

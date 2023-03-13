@@ -39,7 +39,9 @@ class BuildInfoSubEventHandler(object):
             if val == 0 and self.KDIP.TotalLayer == 0:
                 self.KDIP.BuildingEvent.clear()
                 return
-            else:
+            elif val != 0 and self.KDIP.IsBuilding is False:
+                self.KDIP.BuildingEvent.set()
+
                 doc = {"time": datetime_now, "CurrentLayer": val}
                 self.KDIP.MongoClient.InsertDocument("JobInfo", doc)
                 # 이제 여기다가 사진 가져오는 코드 작성해야함
@@ -118,6 +120,7 @@ class UaClient(object):
         self.Handles_EnvLog = []
         self.handles_test1 = []
         self.handles_test2 = []
+        self.client = None
 
     def ConnectServer(self, url):
         try:
@@ -129,10 +132,15 @@ class UaClient(object):
         except:
             print("Except Occurred!")
 
+    def CheckConnection(self):
+        try:
+            return self.client.uaclient._uasocket._thread.isAlive()
+        except:
+            return False
 
     def DisconnectServer(self):
-            # Disconnect when finish
-            self.client.disconnect()
+        # Disconnect when finish
+        self.client.disconnect()
 
     # -------------------------------- Test Func (Robot Server) --------------------------------
 
